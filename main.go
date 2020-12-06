@@ -29,18 +29,20 @@ func run() {
 
 	frames:=0
 	second := time.Tick(time.Second)
+	frameNum := 0.
 	for !win.Closed() {
 		// safe to remove: vsync is set.  60fps is too fast for viewing though.
-		time.Sleep(50 * time.Millisecond)
+		//time.Sleep(10 * time.Millisecond)
 		win.Clear(colornames.Black)
 		imd.Clear()
 
 		//correlatedNoiseLine(cfg, imd)
-		Perlin(cfg, imd)
+		Perlin(cfg, imd, frameNum)
 
 		imd.Draw(win)
 		win.Update()
 		frames++
+		frameNum++
 		select {
 		case <-second:
 			win.SetTitle(fmt.Sprintf("%s | FPS: %d", cfg.Title, frames))

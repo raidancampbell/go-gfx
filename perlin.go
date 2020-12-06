@@ -48,17 +48,19 @@ func doPerlin(p float64) float64 {
 }
 
 
-func Perlin(cfg *pixelgl.WindowConfig, imd *imdraw.IMDraw) {
+func Perlin(cfg *pixelgl.WindowConfig, imd *imdraw.IMDraw, offset float64) {
 	cfg.Title = "perlin-line"
 
 	points := make([]pixel.Vec, WINDOW_WIDTH)
 	for x := 0.; x < float64(len(points)); x+= 1 {
+
+		o := offset
 		points[int(x)] = pixel.Vec {
 			X: x,
-			Y: WINDOW_HEIGHT/2 + (doPerlin(x * (1.0/300.0)) * WINDOW_HEIGHT/2) +
-				doPerlin(x * (1.0/150.0)) * 0.5 * WINDOW_HEIGHT/2 +
-				doPerlin(x * (1.0/75.0)) * 0.25 * WINDOW_HEIGHT/2 +
-				doPerlin(x * (1.0/37.5)) * 0.125 * WINDOW_HEIGHT/2,
+			Y: WINDOW_HEIGHT/2 + (doPerlin((x+o) * (1.0/300.0)) * WINDOW_HEIGHT/2) +
+				doPerlin((x+o) * (1.0/150.0)) * 0.5 * WINDOW_HEIGHT/2 +
+				doPerlin((x+o) * (1.0/75.0)) * 0.25 * WINDOW_HEIGHT/2 +
+				doPerlin((x+o) * (1.0/37.5)) * 0.125 * WINDOW_HEIGHT/2,
 		}
 	}
 	imd.Push(points...)
