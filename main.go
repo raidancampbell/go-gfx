@@ -32,12 +32,12 @@ func run() {
 	frameNum := 0.
 	for !win.Closed() {
 		// safe to remove: vsync is set.  60fps is too fast for viewing though.
-		//time.Sleep(10 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 		win.Clear(colornames.Black)
 		imd.Clear()
 
 		//correlatedNoiseLine(cfg, imd)
-		Perlin(cfg, imd, frameNum)
+		Perlin2(cfg, imd, frameNum)
 
 		imd.Draw(win)
 		win.Update()
