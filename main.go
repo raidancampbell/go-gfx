@@ -14,12 +14,12 @@ const (
 )
 
 func run() {
-	cfg := pixelgl.WindowConfig{
+	cfg := &pixelgl.WindowConfig{
 		Title:  "demo",
 		Bounds: pixel.R(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT),
 		VSync:  true,
 	}
-	win, err := pixelgl.NewWindow(cfg)
+	win, err := pixelgl.NewWindow(*cfg)
 	if err != nil {
 		panic(err)
 	}
@@ -35,7 +35,8 @@ func run() {
 		win.Clear(colornames.Black)
 		imd.Clear()
 
-		correlatedNoiseLine(cfg, imd)
+		//correlatedNoiseLine(cfg, imd)
+		Perlin(cfg, imd)
 
 		imd.Draw(win)
 		win.Update()
