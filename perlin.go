@@ -50,13 +50,15 @@ func doPerlin(p float64) float64 {
 
 func Perlin(cfg *pixelgl.WindowConfig, imd *imdraw.IMDraw) {
 	cfg.Title = "perlin-line"
-	frequency := 1.0 / 50.0
 
 	points := make([]pixel.Vec, WINDOW_WIDTH)
 	for x := 0.; x < float64(len(points)); x+= 1 {
 		points[int(x)] = pixel.Vec {
 			X: x,
-			Y: WINDOW_HEIGHT/2 + (doPerlin(x * frequency) * float64(WINDOW_HEIGHT)),
+			Y: WINDOW_HEIGHT/2 + (doPerlin(x * (1.0/300.0)) * WINDOW_HEIGHT/2) +
+				doPerlin(x * (1.0/150.0)) * 0.5 * WINDOW_HEIGHT/2 +
+				doPerlin(x * (1.0/75.0)) * 0.25 * WINDOW_HEIGHT/2 +
+				doPerlin(x * (1.0/37.5)) * 0.125 * WINDOW_HEIGHT/2,
 		}
 	}
 	imd.Push(points...)
