@@ -10,7 +10,7 @@ import (
 )
 const (
 	WINDOW_WIDTH = 1024
-	WINDOW_HEIGHT = 128
+	WINDOW_HEIGHT = 1024
 )
 
 func run() {
@@ -37,7 +37,8 @@ func run() {
 		imd.Clear()
 
 		//correlatedNoiseLine(cfg, imd)
-		Perlin2(cfg, imd, frameNum)
+		//Perlin2DTemporal(cfg, imd, frameNum)
+		Perlin2DSpatial(cfg, win)
 
 		imd.Draw(win)
 		win.Update()
