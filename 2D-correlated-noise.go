@@ -4,6 +4,7 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/raidancampbell/go-gfx/internal"
 	"math"
 	"math/rand"
 )
@@ -12,21 +13,21 @@ const (
 	POINT_RATIO = 1./2  // how many points to choose: line will be drawn between points
 )
 
-func correlatedNoiseLine(cfg pixelgl.WindowConfig, imd *imdraw.IMDraw) {
+func correlatedNoiseLine(cfg *pixelgl.WindowConfig, imd *imdraw.IMDraw) {
 	cfg.Title = "correlated-noise-line"
 
-	tmp := WINDOW_WIDTH * POINT_RATIO // patch for golang's special treatment of type conversion on constants
+	tmp := float64(internal.WINDOW_WIDTH) * POINT_RATIO // patch for golang's special treatment of type conversion on constants
 	points := make([]pixel.Vec, int(tmp))
 	for x := 0.; x < float64(len(points)); x+= 1 {
 		if x == 0 {
 			points[int(x)] = pixel.Vec {
 				X: x,
-				Y: correlatedNoiseNextPoint(math.NaN(), WINDOW_HEIGHT),
+				Y: correlatedNoiseNextPoint(math.NaN(), float64(internal.WINDOW_HEIGHT)),
 			}
 		} else {
 			points[int(x)] = pixel.Vec {
 				X: x / POINT_RATIO,
-				Y: correlatedNoiseNextPoint(points[int(x)-1].Y, WINDOW_HEIGHT),
+				Y: correlatedNoiseNextPoint(points[int(x)-1].Y, float64(internal.WINDOW_HEIGHT)),
 			}
 		}
 	}

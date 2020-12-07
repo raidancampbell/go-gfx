@@ -1,9 +1,10 @@
-package main
+package perlin
 
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/raidancampbell/go-gfx/internal"
 	"math"
 	"math/rand"
 	"time"
@@ -51,16 +52,16 @@ func doPerlin(p float64) float64 {
 func Perlin(cfg *pixelgl.WindowConfig, imd *imdraw.IMDraw, offset float64) {
 	cfg.Title = "perlin-line"
 
-	points := make([]pixel.Vec, WINDOW_WIDTH)
+	points := make([]pixel.Vec, internal.WINDOW_WIDTH)
 	for x := 0.; x < float64(len(points)); x+= 1 {
 
 		o := offset
 		points[int(x)] = pixel.Vec {
 			X: x,
-			Y: WINDOW_HEIGHT/2 + (doPerlin((x+o) * (1.0/300.0)) * WINDOW_HEIGHT/2) +
-				doPerlin((x+o) * (1.0/150.0)) * 0.5 * WINDOW_HEIGHT/2 +
-				doPerlin((x+o) * (1.0/75.0)) * 0.25 * WINDOW_HEIGHT/2 +
-				doPerlin((x+o) * (1.0/37.5)) * 0.125 * WINDOW_HEIGHT/2,
+			Y: float64(internal.WINDOW_HEIGHT)/2 + (doPerlin((x+o) * (1.0/300.0)) * float64(internal.WINDOW_HEIGHT) /2) +
+				doPerlin((x+o) * (1.0/150.0)) * 0.5 * float64(internal.WINDOW_HEIGHT)/2 +
+				doPerlin((x+o) * (1.0/75.0)) * 0.25 * float64(internal.WINDOW_HEIGHT)/2 +
+				doPerlin((x+o) * (1.0/37.5)) * 0.125 * float64(internal.WINDOW_HEIGHT)/2,
 		}
 	}
 	imd.Push(points...)

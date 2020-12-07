@@ -1,23 +1,24 @@
-package main
+package perlin
 
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/raidancampbell/go-gfx/internal"
 	"math/rand"
 )
 
 func Perlin2DTemporal(cfg *pixelgl.WindowConfig, imd *imdraw.IMDraw, offset float64) {
 	cfg.Title = "perlin-waves"
 
-	points := make([]pixel.Vec, WINDOW_WIDTH)
+	points := make([]pixel.Vec, internal.WINDOW_WIDTH)
 	for x := 0.; x < float64(len(points)); x+= 1 {
 
 		points[int(x)] = pixel.Vec {
 			X: x,
-			Y: WINDOW_HEIGHT/2 +
-				(doPerlin2D(coord2D{(x + offset*5)/140, offset * 5/140}) * WINDOW_HEIGHT/4) +
-				(doPerlin2D(coord2D{(x + offset*10)/50, offset * 5/50}) * WINDOW_HEIGHT/4)/4,
+			Y: float64(internal.WINDOW_HEIGHT)/2 +
+				(doPerlin2D(internal.Coord2D{X: (x + offset*5)/140, Y: offset * 5/140}) * float64(internal.WINDOW_HEIGHT) /4) +
+				(doPerlin2D(internal.Coord2D{X: (x + offset*10)/50, Y: offset * 5/50}) * float64(internal.WINDOW_HEIGHT)/4)/4,
 		}
 	}
 	imd.Push(points...)
@@ -28,7 +29,7 @@ func Perlin2DSpatial(cfg *pixelgl.WindowConfig, win *pixelgl.Window) {
 	cfg.Title = "perlin-2D"
 	var px = make([]uint8, len(win.Canvas().Pixels()))
 	idx := 0
-	baseNoise := GenerateWhiteNoise(WINDOW_WIDTH, WINDOW_HEIGHT)
+	baseNoise := GenerateWhiteNoise(internal.WINDOW_WIDTH, internal.WINDOW_HEIGHT)
 	perlin := GeneratePerlinNoise(baseNoise, 7)
 	for y := 0; y < int(win.Bounds().H()); y++ {
 		for x := 0; x < int(win.Bounds().W()); x++ {
@@ -148,12 +149,12 @@ func GenerateWhiteNoise(width, height int) [][]float64 {
 	return noise
 }
 
-func doPerlin2D(p coord2D) float64 {
+func doPerlin2D(p internal.Coord2D) float64 {
 	/* Calculate lattice points. */
-	p0 := p.floor()
-	p1 := p0.add(new2D(1., 0.))
-	p2 := p0.add(new2D(0., 1.))
-	p3 := p0.add(new2D(1., 1.))
+	p0 := p.Floor()
+	p1 := p0.Add(internal.New2D(1., 0.))
+	p2 := p0.Add(internal.New2D(0., 1.))
+	p3 := p0.Add(internal.New2D(1., 1.))
 
 	/* Look up gradients at lattice points. */
 	g0 := grad2D(p0)
@@ -161,25 +162,25 @@ func doPerlin2D(p coord2D) float64 {
 	g2 := grad2D(p2)
 	g3 := grad2D(p3)
 
-	fadeT0 := fade(p.x - p0.x) /* Used for interpolation in horizontal direction */
-	fadeT1 := fade(p.y - p0.y) /* Used for interpolation in vertical direction. */
+	fadeT0 := fade(p.X - p0.X) /* Used for interpolation in horizontal direction */
+	fadeT1 := fade(p.Y - p0.Y) /* Used for interpolation in vertical direction. */
 
 	/* Calculate dot products and interpolate.*/
-	p0p1 := (1.0-fadeT0)*g0.dot(p.sub(p0)) + fadeT0*g1.dot(p.sub(p1)) // between upper two lattice points
-	p2p3 := (1.0-fadeT0)*g2.dot(p.sub(p2)) + fadeT0*g3.dot(p.sub(p3)) // between lower two lattice points
+	p0p1 := (1.0-fadeT0)*g0.Dot(p.Sub(p0)) + fadeT0*g1.Dot(p.Sub(p1)) // between upper two lattice points
+	p2p3 := (1.0-fadeT0)*g2.Dot(p.Sub(p2)) + fadeT0*g3.Dot(p.Sub(p3)) // between lower two lattice points
 
 	/* Calculate final result */
 	return (1.0-fadeT1)*p0p1 + fadeT1*p2p3
 }
 
 
-func grad2D(c coord2D) coord2D {
+func grad2D(c internal.Coord2D) internal.Coord2D {
 
-	ret := coord2D{
-		x: perlinLUT[int(c.x)%len(perlinLUT)],
-		y: perlinLUT[int(c.y)%len(perlinLUT)],
+	ret := internal.Coord2D{
+		X: perlinLUT[int(c.X)%len(perlinLUT)],
+		Y: perlinLUT[int(c.Y)%len(perlinLUT)],
 	}.
-		scale(2.).
-		sub(new2D(1, 1))
-	return ret.normalized()
+		Scale(2.).
+		Sub(internal.New2D(1, 1))
+	return ret.Normalized()
 }

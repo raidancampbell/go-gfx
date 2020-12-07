@@ -5,18 +5,21 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/raidancampbell/go-gfx/internal"
+	"github.com/raidancampbell/go-gfx/perlin"
 	"golang.org/x/image/colornames"
 	"time"
 )
-const (
-	WINDOW_WIDTH = 1024
-	WINDOW_HEIGHT = 512
-)
+func init() {
+	// elevating into main package for readability
+	internal.WINDOW_WIDTH = 1024
+	internal.WINDOW_HEIGHT = 512
+}
 
 func run() {
 	cfg := &pixelgl.WindowConfig{
 		Title:  "demo",
-		Bounds: pixel.R(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT),
+		Bounds: pixel.R(0, 0, float64(internal.WINDOW_WIDTH), float64(internal.WINDOW_HEIGHT)),
 		VSync:  true,
 	}
 	win, err := pixelgl.NewWindow(*cfg)
@@ -37,8 +40,8 @@ func run() {
 		imd.Clear()
 
 		//correlatedNoiseLine(cfg, imd)
-		//Perlin2DTemporal(cfg, imd, frameNum)
-		Perlin2DSpatial(cfg, win)
+		//perlin.Perlin2DTemporal(cfg, imd, frameNum)
+		perlin.Perlin2DSpatial(cfg, win)
 
 		imd.Draw(win)
 		win.Update()
