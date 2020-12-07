@@ -8,7 +8,7 @@ import (
 	"math/rand"
 )
 
-func Perlin2DTemporal(cfg *pixelgl.WindowConfig, imd *imdraw.IMDraw, offset float64) {
+func Perlin2DTemporal(cfg *pixelgl.WindowConfig, imd *imdraw.IMDraw, offset float64) []pixel.Vec {
 	cfg.Title = "perlin-waves"
 
 	points := make([]pixel.Vec, internal.WINDOW_WIDTH)
@@ -23,6 +23,7 @@ func Perlin2DTemporal(cfg *pixelgl.WindowConfig, imd *imdraw.IMDraw, offset floa
 	}
 	imd.Push(points...)
 	imd.Line(1)
+	return points
 }
 
 func Perlin2DSpatial(cfg *pixelgl.WindowConfig, win *pixelgl.Window) {

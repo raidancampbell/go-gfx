@@ -5,8 +5,8 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/raidancampbell/go-gfx/bouncyball"
 	"github.com/raidancampbell/go-gfx/internal"
-	"github.com/raidancampbell/go-gfx/perlin"
 	"golang.org/x/image/colornames"
 	"time"
 )
@@ -41,7 +41,8 @@ func run() {
 
 		//correlatedNoiseLine(cfg, imd)
 		//perlin.Perlin2DTemporal(cfg, imd, frameNum)
-		perlin.Perlin2DSpatial(cfg, win)
+		//perlin.Perlin2DSpatial(cfg, win)
+		bouncyball.Do(cfg, imd, frameNum)
 
 		imd.Draw(win)
 		win.Update()
