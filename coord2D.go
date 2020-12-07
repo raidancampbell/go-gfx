@@ -28,6 +28,13 @@ func (c coord2D) add(other coord2D) coord2D {
 	}
 }
 
+func (c coord2D) sub(other coord2D) coord2D {
+	return coord2D{
+		x: c.x - other.x,
+		y: c.y - other.y,
+	}
+}
+
 func (c coord2D) scale(factor float64) coord2D {
 	return coord2D{
 		x: c.x * factor,

@@ -4,12 +4,8 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
-	"math"
 	"math/rand"
-	"time"
 )
-
-
 
 func Perlin2DTemporal(cfg *pixelgl.WindowConfig, imd *imdraw.IMDraw, offset float64) {
 	cfg.Title = "perlin-waves"
@@ -17,7 +13,6 @@ func Perlin2DTemporal(cfg *pixelgl.WindowConfig, imd *imdraw.IMDraw, offset floa
 	points := make([]pixel.Vec, WINDOW_WIDTH)
 	for x := 0.; x < float64(len(points)); x+= 1 {
 
-		//o := offset
 		points[int(x)] = pixel.Vec {
 			X: x,
 			Y: WINDOW_HEIGHT/2 +
@@ -33,19 +28,16 @@ func Perlin2DSpatial(cfg *pixelgl.WindowConfig, win *pixelgl.Window) {
 	cfg.Title = "perlin-2D"
 	var px = make([]uint8, len(win.Canvas().Pixels()))
 	idx := 0
+	baseNoise := GenerateWhiteNoise(WINDOW_WIDTH, WINDOW_HEIGHT)
+	perlin := GeneratePerlinNoise(baseNoise, 7)
 	for y := 0; y < int(win.Bounds().H()); y++ {
 		for x := 0; x < int(win.Bounds().W()); x++ {
-			c := new2D(x, y)
-			n := doPerlin2D(c.scale(1./64)) * 1.0 +
-				doPerlin2D(c.scale(1./32)) * 0.5 +
-				doPerlin2D(c.scale(1./16)) * 0.25 +
-				doPerlin2D(c.scale(1./8)) * 0.125
-			n = (n + 1) / 2 // from [-1,1] to [0,1]
+			n := perlin[x][y]
 			px[idx] = uint8(255 * n) //R
 			idx++
 			px[idx] = uint8(255 * n) //G
 			idx++
-			px[idx] = uint8(255 * n)// B
+			px[idx] = uint8(255 * n) // B
 			idx++
 			px[idx] = uint8(255) //A
 			idx++
@@ -55,6 +47,106 @@ func Perlin2DSpatial(cfg *pixelgl.WindowConfig, win *pixelgl.Window) {
 	win.Canvas().SetPixels(px)
 }
 
+func GenerateSmoothNoise(baseNoise [][]float64, octave int) [][]float64 {
+	width := len(baseNoise)
+	height := len(baseNoise[0])
+
+	smoothNoise := make([][]float64, width)
+
+	for i := range smoothNoise {
+		smoothNoise[i] = make([]float64, height)
+	}
+
+	samplePeriod := 1 << octave // calculates 2 ^ k
+	sampleFrequency := 1.0 / float64(samplePeriod)
+
+	for i := 0; i < width; i++ {
+		//calculate the horizontal sampling indices
+		sampleI0 := (i / samplePeriod) * samplePeriod
+		sampleI1 := (sampleI0 + samplePeriod) % width //wrap around
+		horizontalBlend := float64(i - sampleI0) * sampleFrequency
+
+		for j := 0; j < height; j++ {
+			//calculate the vertical sampling indices
+			sampleJ0 := (j / samplePeriod) * samplePeriod
+			sampleJ1 := (sampleJ0 + samplePeriod) % height //wrap around
+			verticalBlend := float64(j - sampleJ0) * sampleFrequency
+
+			//blend the top two corners
+			top := Interpolate(baseNoise[sampleI0][sampleJ0], baseNoise[sampleI1][sampleJ0], float64(horizontalBlend))
+
+			//blend the bottom two corners
+			bottom := Interpolate(baseNoise[sampleI0][sampleJ1], baseNoise[sampleI1][sampleJ1], float64(horizontalBlend))
+
+			//final blend
+			smoothNoise[i][j] = Interpolate(top, bottom, float64(verticalBlend))
+		}
+	}
+
+	return smoothNoise
+}
+
+func Interpolate(x0, x1, alpha float64) float64 {
+	return x0*(1-alpha) + alpha*x1
+}
+
+func GeneratePerlinNoise(baseNoise [][]float64, octaveCount int) [][]float64 {
+	width := len(baseNoise)
+	height := len(baseNoise[0])
+
+	smoothNoise := make([][][]float64, octaveCount)
+
+	persistance := 0.8
+
+	//generate smooth noise
+	for i := 0; i < octaveCount; i++ {
+		smoothNoise[i] = GenerateSmoothNoise(baseNoise, i)
+	}
+
+	perlinNoise := make([][]float64, width)
+
+	for i := range perlinNoise {
+		perlinNoise[i] = make([]float64, height)
+	}
+	amplitude := 1.0
+	totalAmplitude := 0.0
+
+	//blend noise together
+	for octave := octaveCount - 1; octave >= 0; octave-- {
+		amplitude *= persistance
+		totalAmplitude += amplitude
+
+		for i := 0; i < width; i++ {
+			for j := 0; j < height; j++ {
+				perlinNoise[i][j] += smoothNoise[octave][i][j] * amplitude
+			}
+		}
+	}
+
+	//normalisation
+	for i := 0; i < width; i++ {
+		for j := 0; j < height; j++ {
+			perlinNoise[i][j] /= totalAmplitude
+		}
+	}
+
+	return perlinNoise
+}
+
+func GenerateWhiteNoise(width, height int) [][]float64 {
+	noise := make([][]float64, width)
+
+	for i := range noise {
+		noise[i] = make([]float64, height)
+	}
+	for i := 0; i < width; i++ {
+		for j := 0; j < height; j++ {
+			noise[i][j] = rand.Float64()
+		}
+	}
+
+	return noise
+}
 
 func doPerlin2D(p coord2D) float64 {
 	/* Calculate lattice points. */
@@ -70,47 +162,24 @@ func doPerlin2D(p coord2D) float64 {
 	g3 := grad2D(p3)
 
 	fadeT0 := fade(p.x - p0.x) /* Used for interpolation in horizontal direction */
-	fadeT1 := fade(p.y - p0.y)     /* Used for interpolation in vertical direction. */
+	fadeT1 := fade(p.y - p0.y) /* Used for interpolation in vertical direction. */
 
 	/* Calculate dot products and interpolate.*/
-	p0p1 := (1.0 - fadeT0) * g0.dot(p.add(p0.scale(-1.))) + fadeT0 * g1.dot(p.add(p1.scale(-1.)))// between upper two lattice points
-	p2p3 := (1.0 - fadeT0) * g2.dot(p.add(p2.scale(-1.))) + fadeT0 * g3.dot(p.add(p3.scale(-1.)))// between lower two lattice points
+	p0p1 := (1.0-fadeT0)*g0.dot(p.sub(p0)) + fadeT0*g1.dot(p.sub(p1)) // between upper two lattice points
+	p2p3 := (1.0-fadeT0)*g2.dot(p.sub(p2)) + fadeT0*g3.dot(p.sub(p3)) // between lower two lattice points
 
 	/* Calculate final result */
-	return (1.0 - fadeT1) * p0p1 + fadeT1 * p2p3
+	return (1.0-fadeT1)*p0p1 + fadeT1*p2p3
 }
 
-func dot(x0, y0, x1, y1 float64) float64 {
-	return x0 * x1 + y0 * y1
-}
 
 func grad2D(c coord2D) coord2D {
-	//const float texture_width = 256.0;
-	//vec4 v = texture2D(iChannel0, vec2(p.x / texture_width, p.y / texture_width));
-	//return normalize(v.xy*2.0 - vec2(1.0)); /* remap sampled value to [-1; 1] and normalize */
 
 	ret := coord2D{
-		x: perlinLUT[int(c.x) % len(perlinLUT)] * 2 - 1,
-		y: perlinLUT2[int(c.y) % len(perlinLUT2)] * 2 - 1,
-	}
+		x: perlinLUT[int(c.x)%len(perlinLUT)],
+		y: perlinLUT[int(c.y)%len(perlinLUT)],
+	}.
+		scale(2.).
+		sub(new2D(1, 1))
 	return ret.normalized()
-}
-
-// Generate a 2D gradient vector from a given input vector
-func grad2(x, y float64) (float64, float64) {
-	retX := perlinLUT[int(x) % len(perlinLUT)] * 2 - 1 // map FROM [0,1] TO [-1,1]
-	retY := perlinLUT2[int(y) % len(perlinLUT2)] * 2 - 1
-
-	// normalize
-	mag := math.Sqrt(retX * retX + retY * retY)
-	return retX / mag, retY / mag
-}
-
-var perlinLUT2 = make([]float64, 512)
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-	for i := range perlinLUT2 {
-		perlinLUT2[i] = rand.Float64()
-	}
 }

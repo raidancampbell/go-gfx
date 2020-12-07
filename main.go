@@ -10,7 +10,7 @@ import (
 )
 const (
 	WINDOW_WIDTH = 1024
-	WINDOW_HEIGHT = 1024
+	WINDOW_HEIGHT = 512
 )
 
 func run() {
@@ -32,7 +32,7 @@ func run() {
 	frameNum := 0.
 	for !win.Closed() {
 		// safe to remove: vsync is set.  60fps is too fast for viewing though.
-		time.Sleep(50 * time.Millisecond)
+		//time.Sleep(50 * time.Millisecond)
 		win.Clear(colornames.Black)
 		imd.Clear()
 
