@@ -21,7 +21,7 @@ func applyGravity() {
 }
 
 func getBallRadius() float64 {
-	return 0.1 * float64(internal.WINDOW_HEIGHT)
+	return 0.05 * float64(internal.WINDOW_HEIGHT)
 }
 
 func drawBall(imd *imdraw.IMDraw) {
